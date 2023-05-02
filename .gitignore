@@ -1,0 +1,14 @@
+.qtc_clangd/
+build/
+debug/
+release/
+.vs/
+bin/
+*.sln
+*.vcxproj
+*.vcxproj.*
+BaseClient.pro.user
+BaseClient.VC.db
+Makefile
+Makefile*
+*.txt
