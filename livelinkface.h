@@ -180,31 +180,36 @@ public:
         if (stream.status() != QDataStream::Ok) {
             return false;
         }
+
         //qDebug() << name;
+        if(stream.device()->bytesAvailable()>16){
+            stream >> frameNumber>>subFrame>> fps >> denominator >> dataLength;
 
-        stream >> frameNumber>>subFrame>> fps >> denominator >> dataLength;
+            if (dataLength != 61) {
+                //qWarning() << "Data does not contain a valid PyLiveLinkFace packet.";
+                return false;
+            }
+            blendShapes.resize(61 * sizeof(float));
+            stream.readRawData(blendShapes.data(), blendShapes.size());
+            this->_version = version;
+            this->uuid = uuid;
+            this->name = name;
+            this->_frames = frameNumber;
+            this->_sub_frame = subFrame;
+            this->fps = fps;
+            this->_denominator = denominator;
 
-        if (dataLength != 61) {
-            qWarning() << "Data does not contain a valid PyLiveLinkFace packet.";
+
+            const float* blendShapesData = reinterpret_cast<const float*>(blendShapes.constData());
+            for(int i=0;i<61;++i){
+                this->_blend_shapes[i]=qToBigEndian(blendShapesData[i]);
+            }
+            //std::for_each(this->_blend_shapes.begin(), this->_blend_shapes.end(), [&](float v) {qDebug() << v; });
+            return true;
+        }else{
             return false;
         }
-        blendShapes.resize(61 * sizeof(float));
-        stream.readRawData(blendShapes.data(), blendShapes.size());
-        this->_version = version;
-        this->uuid = uuid;
-        this->name = name;
-        this->_frames = frameNumber;
-        this->_sub_frame = subFrame;
-        this->fps = fps;
-        this->_denominator = denominator;
 
-
-        const float* blendShapesData = reinterpret_cast<const float*>(blendShapes.constData());
-        for(int i=0;i<61;++i){
-            this->_blend_shapes[i]=qToBigEndian(blendShapesData[i]);
-        }
-        //std::for_each(this->_blend_shapes.begin(), this->_blend_shapes.end(), [&](float v) {qDebug() << v; });
-        return true;
     }
 
     /**

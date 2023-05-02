@@ -2,7 +2,7 @@
 #include <QtNetwork/QUdpSocket>
 #include "livelinkface.h"
 
-#define UDP_PORT 2222
+#define UDP_PORT 11111
 int main(int argc, char *argv[])
 {
     qDebug() << sizeof(float);
@@ -30,20 +30,22 @@ int main(int argc, char *argv[])
     //            }
     //        }
     //    }
-    if (udpSocket.waitForReadyRead(-1)) {
-        QByteArray datagram;
-        datagram.resize(udpSocket.pendingDatagramSize());
-        udpSocket.readDatagram(datagram.data(), datagram.size());
-        bool success;
-        PyLiveLinkFace liveLinkFace;
-        success= liveLinkFace.decode(datagram);
+    while (true){
+        if(udpSocket.waitForReadyRead(-1)) {
+            QByteArray datagram;
+            datagram.resize(udpSocket.pendingDatagramSize());
+            udpSocket.readDatagram(datagram.data(), datagram.size());
+            bool success;
+            PyLiveLinkFace liveLinkFace;
+            success= liveLinkFace.decode(datagram);
 
-        if (success) {
-            // get the blendshape value for the HeadPitch and print it
-            float pitch = liveLinkFace.getBlendshape(PyLiveLinkFace::FaceBlendShape::HeadPitch);
-            qDebug() << liveLinkFace.name << pitch;
+            if (success) {
+                // get the blendshape value for the HeadPitch and print it
+                float pitch = liveLinkFace.getBlendshape(PyLiveLinkFace::FaceBlendShape::HeadPitch);
+                qDebug() << liveLinkFace.name << pitch;
+            }
+            // 处理收到的数据
         }
-        // 处理收到的数据
     }
     return 0;
 }
